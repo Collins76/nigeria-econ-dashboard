@@ -3,7 +3,7 @@ import clsx from 'clsx'
 import { ArrowLeftRight, BarChart3, Download, TrendingUp } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip as RechartTooltip, Legend, ResponsiveContainer
+  Tooltip as RechartTooltip, Legend, ResponsiveContainer,
 } from 'recharts'
 import { format, parseISO } from 'date-fns'
 import Header from './components/layout/Header'
@@ -23,6 +23,12 @@ import { getAllData } from './data/export'
 
 type Tab = 'overview' | 'compare' | 'correlation'
 
+const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
+  { id: 'overview',     label: 'Overview',     icon: <TrendingUp className="w-3.5 h-3.5" /> },
+  { id: 'compare',      label: 'Compare',      icon: <BarChart3  className="w-3.5 h-3.5" /> },
+  { id: 'correlation',  label: 'Correlation',  icon: <ArrowLeftRight className="w-3.5 h-3.5" /> },
+]
+
 export default function App() {
   const dash = useDashboard()
   const [activeTab, setActiveTab] = useState<Tab>('overview')
@@ -30,40 +36,57 @@ export default function App() {
   const [corrY, setCorrY] = useState('fx_usd_ngn')
 
   const handleExportAll = () => {
-    const data = getAllData(dash.dateRange)
-    downloadCSV(data, `nigeria_economic_data_${dash.dateRange.start}_${dash.dateRange.end}.csv`)
+    downloadCSV(
+      getAllData(dash.dateRange),
+      `nigeria_economic_data_${dash.dateRange.start}_${dash.dateRange.end}.csv`,
+    )
   }
 
-  const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: 'overview', label: 'Overview', icon: <TrendingUp className="w-3.5 h-3.5" /> },
-    { id: 'compare', label: 'Compare', icon: <BarChart3 className="w-3.5 h-3.5" /> },
-    { id: 'correlation', label: 'Correlation', icon: <ArrowLeftRight className="w-3.5 h-3.5" /> },
-  ]
+  const handleDownloadChart = () => {
+    ;(dash.mainSeriesData as Array<{
+      id: string
+      indicator: { name: string; units: string }
+      series: { data: { date: string; value: number }[] }
+    }>).forEach(s => {
+      downloadCSV(
+        s.series.data.map(p => ({
+          indicator: s.indicator.name,
+          date: p.date,
+          value: p.value,
+          units: s.indicator.units,
+        })),
+        `${s.id}_chart.csv`,
+      )
+    })
+  }
 
   return (
     <div className={clsx('min-h-screen bg-[--color-bg]', dash.highContrast && 'high-contrast')}>
+      {/* ── Header with wired nav buttons ── */}
       <Header
         darkMode={dash.darkMode}
         toggleDark={dash.toggleDark}
         highContrast={dash.highContrast}
         setHighContrast={dash.setHighContrast}
         activeAlerts={dash.activeAlerts}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
       />
 
       <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6" id="main-content">
-        {/* Page title */}
+        {/* Page title row */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
               Nigeria Economic Indicators
             </h1>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-              Real-time macroeconomic dashboard · Data as of March 2025
+              Macroeconomic dashboard · Data as of March 2025
             </p>
           </div>
           <button
             onClick={handleExportAll}
-            className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl bg-brand-700 text-white hover:bg-brand-800 transition-colors"
+            className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl bg-brand-700 text-white hover:bg-brand-800 active:bg-brand-900 transition-colors"
             aria-label="Export all data to CSV"
           >
             <Download className="w-4 h-4" /> Export All CSV
@@ -77,7 +100,7 @@ export default function App() {
           onSelect={id => dash.setDrilldownId(id)}
         />
 
-        {/* Filters */}
+        {/* Filter bar */}
         <FilterBar
           presetRanges={dash.presetRanges}
           selectedPreset={dash.selectedPreset}
@@ -92,27 +115,31 @@ export default function App() {
           onToggleEvents={() => dash.setShowEvents((v: boolean) => !v)}
         />
 
-        {/* Tab bar */}
-        <div className="flex items-center gap-1 mb-4 border-b border-slate-200 dark:border-slate-700" role="tablist">
+        {/* Secondary tab bar (visible on mobile where header nav is hidden) */}
+        <div
+          className="flex items-center gap-1 mb-4 border-b border-slate-200 dark:border-slate-700 md:hidden"
+          role="tablist"
+          aria-label="Dashboard tabs"
+        >
           {TABS.map(tab => (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={activeTab === tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={clsx(
                 'flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold transition-colors border-b-2 -mb-px',
                 activeTab === tab.id
                   ? 'border-brand-700 text-brand-700 dark:border-brand-400 dark:text-brand-400'
-                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200',
               )}
-              aria-selected={activeTab === tab.id}
-              role="tab"
             >
               {tab.icon} {tab.label}
             </button>
           ))}
         </div>
 
-        {/* OVERVIEW TAB */}
+        {/* ═══════════════ OVERVIEW TAB ═══════════════ */}
         {activeTab === 'overview' && (
           <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
             <div className="xl:col-span-3 space-y-4">
@@ -123,28 +150,13 @@ export default function App() {
                     <span className="ml-2 text-xs font-normal text-slate-400">
                       {dash.selectedIndicators
                         .map((id: string) => INDICATORS.find(i => i.id === id)?.shortName)
+                        .filter(Boolean)
                         .join(', ')}
                     </span>
                   </h2>
                   <button
-                    onClick={() => {
-                      (dash.mainSeriesData as Array<{
-                        id: string
-                        indicator: { name: string; units: string }
-                        series: { data: { date: string; value: number }[] }
-                      }>).forEach(s => {
-                        downloadCSV(
-                          s.series.data.map(p => ({
-                            indicator: s.indicator.name,
-                            date: p.date,
-                            value: p.value,
-                            units: s.indicator.units,
-                          })),
-                          `${s.id}_chart.csv`
-                        )
-                      })
-                    }}
-                    className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                    onClick={handleDownloadChart}
+                    className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 transition-colors"
                   >
                     <Download className="w-3 h-3" /> CSV
                   </button>
@@ -170,14 +182,22 @@ export default function App() {
           </div>
         )}
 
-        {/* COMPARE TAB */}
+        {/* ═══════════════ COMPARE TAB ═══════════════ */}
         {activeTab === 'compare' && (
           <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
             <div className="xl:col-span-3 space-y-4">
               <div className="bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
-                <h2 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">
-                  Multi-Indicator Comparison
-                </h2>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+                    Multi-Indicator Comparison
+                  </h2>
+                  <button
+                    onClick={handleDownloadChart}
+                    className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 transition-colors"
+                  >
+                    <Download className="w-3 h-3" /> CSV
+                  </button>
+                </div>
                 <TimeSeriesChart
                   series={dash.mainSeriesData}
                   showEvents={dash.showEvents}
@@ -199,32 +219,32 @@ export default function App() {
           </div>
         )}
 
-        {/* CORRELATION TAB */}
+        {/* ═══════════════ CORRELATION TAB ═══════════════ */}
         {activeTab === 'correlation' && (
           <div className="space-y-4">
             <div className="bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
               <h2 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">
-                Scatter Plot & Regression
+                Scatter Plot &amp; Regression
               </h2>
-              <div className="flex flex-wrap gap-3 mb-4">
+              <div className="flex flex-wrap gap-4 mb-2">
                 <div>
-                  <label className="block text-xs text-slate-500 mb-1">X Axis</label>
+                  <label htmlFor="corr-x" className="block text-xs text-slate-500 mb-1 font-medium">X Axis</label>
                   <select
+                    id="corr-x"
                     value={corrX}
                     onChange={e => setCorrX(e.target.value)}
-                    className="text-sm px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100"
-                    aria-label="X axis indicator"
+                    className="text-sm px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-brand-500"
                   >
                     {INDICATORS.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-500 mb-1">Y Axis</label>
+                  <label htmlFor="corr-y" className="block text-xs text-slate-500 mb-1 font-medium">Y Axis</label>
                   <select
+                    id="corr-y"
                     value={corrY}
                     onChange={e => setCorrY(e.target.value)}
-                    className="text-sm px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100"
-                    aria-label="Y axis indicator"
+                    className="text-sm px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-brand-500"
                   >
                     {INDICATORS.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
                   </select>
@@ -254,7 +274,7 @@ export default function App() {
           <span className="text-brand-700 dark:text-brand-500">Built with React + Recharts</span>
         </p>
         <p className="mt-1">
-          Figures are illustrative; always verify against official sources before use in policy or investment decisions.
+          Figures are illustrative; verify against official sources before use in policy or investment decisions.
         </p>
       </footer>
     </div>
@@ -327,7 +347,9 @@ function CorrelationMatrix({ dateRange }: { dateRange: { start: string; end: str
 function MiniCorr({
   xId, yId, dateRange,
 }: {
-  xId: string; yId: string; dateRange: { start: string; end: string }
+  xId: string
+  yId: string
+  dateRange: { start: string; end: string }
 }) {
   const xInd = INDICATOR_MAP[xId]
   const yInd = INDICATOR_MAP[yId]
@@ -346,18 +368,18 @@ function MiniCorr({
   const num = points.reduce((s, p) => s + (p.x - meanX) * (p.y - meanY), 0)
   const denom = Math.sqrt(
     points.reduce((s, p) => s + (p.x - meanX) ** 2, 0) *
-    points.reduce((s, p) => s + (p.y - meanY) ** 2, 0)
+    points.reduce((s, p) => s + (p.y - meanY) ** 2, 0),
   )
   const r = denom === 0 ? 0 : num / denom
   const absR = Math.abs(r)
-  const color = r > 0
+  const bgColor = r > 0
     ? `rgba(0,135,81,${0.15 + absR * 0.55})`
     : `rgba(239,68,68,${0.15 + absR * 0.55})`
 
   return (
     <div
       className="rounded-lg p-3 border border-slate-100 dark:border-slate-700"
-      style={{ backgroundColor: color }}
+      style={{ backgroundColor: bgColor }}
     >
       <div className="text-xs font-semibold text-slate-800 dark:text-white truncate">
         {xInd.shortName} × {yInd.shortName}

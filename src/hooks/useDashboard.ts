@@ -38,7 +38,12 @@ export function useDashboard() {
   const [drilldownId, setDrilldownId] = useState<string | null>(null)
   const [alerts, setAlerts] = useState<AlertConfig[]>(DEFAULT_ALERTS)
   const [showCorrelation, setShowCorrelation] = useState(false)
-  const [showEvents, setShowEvents] = useState(true)
+  const [showEvents, setShowEventsRaw] = useState(true)
+
+  // Accept both direct value and functional updater
+  const setShowEvents = useCallback((v: boolean | ((prev: boolean) => boolean)) => {
+    setShowEventsRaw(v)
+  }, [])
 
   const presetRanges = PRESET_RANGES
 
