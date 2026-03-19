@@ -43,26 +43,6 @@
   100% { transform: translateX(-100%); }
 }
 
-@keyframes glow-pulse {
-  0%, 100% {
-    text-shadow:
-      0 0 4px #4a4a4a,
-      0 0 10px #333333,
-      0 0 22px #2a2a2a,
-      0 0 40px #1a1a1a;
-    opacity: 1;
-  }
-  50% {
-    text-shadow:
-      0 0 8px #5c5c5c,
-      0 0 18px #444444,
-      0 0 35px #333333,
-      0 0 60px #222222,
-      0 0 80px #111111;
-    opacity: 0.82;
-  }
-}
-
 .marquee-track {
   overflow: hidden;
   white-space: nowrap;
@@ -72,9 +52,7 @@
 
 .marquee-text {
   display: inline-block;
-  animation:
-    marquee-scroll 18s linear infinite,
-    glow-pulse 2.4s ease-in-out infinite;
+  animation: marquee-scroll 18s linear infinite;
   color: #2d2d2d;
   font-weight: 600;
   font-size: 0.75rem;
