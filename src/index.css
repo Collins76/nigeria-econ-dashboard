@@ -53,7 +53,7 @@
 .marquee-text {
   display: inline-block;
   animation: marquee-scroll 18s linear infinite;
-  color: #2d2d2d;
+  color: var(--color-text);
   font-weight: 600;
   font-size: 0.75rem;
   letter-spacing: 0.04em;
