@@ -50,7 +50,7 @@ export default function Header({
         </div>
 
         {/* Nav links (desktop) — wired to tab state */}
-        <nav className="hidden md:flex items-center gap-1 text-sm font-medium" aria-label="Main navigation" role="tablist">
+        <nav className="hidden md:flex items-center gap-1 text-sm font-medium flex-shrink-0" aria-label="Main navigation" role="tablist">
           {NAV_ITEMS.map(({ label, tab }) => (
             <button
               key={tab}
@@ -69,7 +69,13 @@ export default function Header({
           ))}
         </nav>
 
-        <div className="flex-1" />
+        {/* Scrolling glowing credit — beside Correlation button in header */}
+        <div className="marquee-track hidden md:block mx-4" aria-label="Dashboard credit">
+          <span className="marquee-text">
+            ✦&nbsp;&nbsp;This Nigeria Economic Dashboard was Designed by Collins Anyanwu&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            ✦&nbsp;&nbsp;This Nigeria Economic Dashboard was Designed by Collins Anyanwu&nbsp;&nbsp;✦
+          </span>
+        </div>
 
         {/* Last updated */}
         <span className="hidden sm:block text-xs text-slate-400 dark:text-slate-500">
