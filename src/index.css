@@ -46,20 +46,20 @@
 @keyframes glow-pulse {
   0%, 100% {
     text-shadow:
-      0 0 4px #ffd700,
-      0 0 10px #ffd700,
-      0 0 22px #ffaa00,
-      0 0 40px #cc8800;
+      0 0 4px #4a4a4a,
+      0 0 10px #333333,
+      0 0 22px #2a2a2a,
+      0 0 40px #1a1a1a;
     opacity: 1;
   }
   50% {
     text-shadow:
-      0 0 8px #ffe033,
-      0 0 20px #ffd700,
-      0 0 40px #ffaa00,
-      0 0 70px #cc8800,
-      0 0 90px #996600;
-    opacity: 0.88;
+      0 0 8px #5c5c5c,
+      0 0 18px #444444,
+      0 0 35px #333333,
+      0 0 60px #222222,
+      0 0 80px #111111;
+    opacity: 0.82;
   }
 }
 
@@ -75,7 +75,7 @@
   animation:
     marquee-scroll 18s linear infinite,
     glow-pulse 2.4s ease-in-out infinite;
-  color: #ffd700;
+  color: #2d2d2d;
   font-weight: 600;
   font-size: 0.75rem;
   letter-spacing: 0.04em;
