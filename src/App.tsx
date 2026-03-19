@@ -115,7 +115,39 @@ export default function App() {
           onToggleEvents={() => dash.setShowEvents((v: boolean) => !v)}
         />
 
-        {/* Secondary tab bar (visible on mobile where header nav is hidden) */}
+        {/* ── Desktop tab bar + scrolling credit marquee ── */}
+        <div
+          className="hidden md:flex items-center gap-1 mb-4 border-b border-slate-200 dark:border-slate-700"
+          role="tablist"
+          aria-label="Dashboard tabs"
+        >
+          {TABS.map(tab => (
+            <button
+              key={tab.id}
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={clsx(
+                'flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold transition-colors border-b-2 -mb-px flex-shrink-0',
+                activeTab === tab.id
+                  ? 'border-brand-700 text-brand-700 dark:border-brand-400 dark:text-brand-400'
+                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200',
+              )}
+            >
+              {tab.icon} {tab.label}
+            </button>
+          ))}
+
+          {/* Scrolling glowing credit — beside Correlation button */}
+          <div className="marquee-track ml-6 pb-1" aria-label="Dashboard credit">
+            <span className="marquee-text">
+              ✦&nbsp;&nbsp;This Nigeria Economic Dashboard was Designed by Collins Anyanwu&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              ✦&nbsp;&nbsp;This Nigeria Economic Dashboard was Designed by Collins Anyanwu&nbsp;&nbsp;✦
+            </span>
+          </div>
+        </div>
+
+        {/* Mobile tab bar (no marquee on small screens) */}
         <div
           className="flex items-center gap-1 mb-4 border-b border-slate-200 dark:border-slate-700 md:hidden"
           role="tablist"

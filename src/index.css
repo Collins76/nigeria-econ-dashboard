@@ -36,3 +36,48 @@
   .dark .scrollbar-thin::-webkit-scrollbar-thumb { background: #475569; }
   .high-contrast { filter: contrast(1.5) saturate(1.3); }
 }
+
+/* ── Scrolling credit marquee ── */
+@keyframes marquee-scroll {
+  0%   { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    text-shadow:
+      0 0 4px #00ff88,
+      0 0 10px #00ff88,
+      0 0 22px #00cc66,
+      0 0 40px #008751;
+    opacity: 1;
+  }
+  50% {
+    text-shadow:
+      0 0 8px #00ffaa,
+      0 0 20px #00ffaa,
+      0 0 40px #00cc66,
+      0 0 70px #008751,
+      0 0 90px #005533;
+    opacity: 0.88;
+  }
+}
+
+.marquee-track {
+  overflow: hidden;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.marquee-text {
+  display: inline-block;
+  animation:
+    marquee-scroll 18s linear infinite,
+    glow-pulse 2.4s ease-in-out infinite;
+  color: #00ff88;
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  will-change: transform;
+}
